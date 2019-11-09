@@ -29,9 +29,9 @@ ship = { name = "ARA Entre Rios" definition = destroyer equipment = { destroyer_
 ship = { name = "ARA Misiones" definition = destroyer equipment = { destroyer_1890 = { amount = 1 owner = ARG } } }
 		}`
 	navy := Parse(navyText)
-	assert.Equal(t, "Armada Argentina", navy.name)
+	assert.Equal(t, `"Armada Argentina"`, navy.name)
 	assert.Len(t, navy.ships, 16)
-	assert.Equal(t, "12364", navy.base)
+	assert.Equal(t, "12364 # Buenos Aires", navy.base)
 }
 
 func TestToFleet(t *testing.T) {

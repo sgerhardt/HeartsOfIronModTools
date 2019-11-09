@@ -32,11 +32,11 @@ func Parse(navy string) *Navy {
 		i, err := strconv.Atoi(string(char))
 		if err != nil {
 			// If there's a comment, add it until a new-line
-			commentIndex := strings.IndexAny(navy[baseStart:], "#")
-			endLine := strings.Index(navy[baseStart:], "\r") - 1
+			endLine := strings.Index(navy[baseStart:], "\n")
+			commentIndex := strings.IndexAny(navy[baseStart:baseStart+endLine], "#")
 			if commentIndex != -1 {
 				fmt.Printf(name)
-				baseName += " " + navy[baseStart+commentIndex:baseStart+endLine+1]
+				baseName += " " + navy[baseStart+commentIndex:baseStart+endLine]
 			}
 			break
 		}
@@ -90,9 +90,12 @@ func ToFleets(navies []*Navy) []fleet {
 
 func getFleetName(navyName string) string {
 	lastDblQuote := strings.LastIndex(navyName, `"`)
-	newName := navyName[:lastDblQuote]
-	newName += ` Fleet"`
-	return strings.TrimSpace(newName)
+	if lastDblQuote != -1 {
+		navyName := navyName[:lastDblQuote]
+		navyName += ` Fleet"`
+	}
+	navyName += ` Fleet"`
+	return strings.TrimSpace(navyName)
 }
 
 func (f *fleet) String() string {

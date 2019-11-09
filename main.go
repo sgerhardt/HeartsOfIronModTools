@@ -6,6 +6,7 @@ import (
 	"github.com/sgerhardt/HeartsOfIronModTools/Parse"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -19,22 +20,23 @@ func main() {
 	}
 	for _, file := range files {
 		if !file.IsDir() {
-			workingData, err := ioutil.ReadFile(*inputDirPointer + string(os.PathSeparator) + file.Name())
-			originalData := workingData
+			fileData, err := ioutil.ReadFile(*inputDirPointer + string(os.PathSeparator) + file.Name())
+			if !strings.Contains(string(fileData), "navy") {
+				continue
+			}
+			originalData := fileData
 			if err != nil {
 				panic("err reading file:" + err.Error())
 			}
-
-			//naviesText := map[string]struct{}{}
 			navies := []*NavyConv.Navy{}
 			naviesText := []string{}
 			for {
 				nextLoc := 0
-				navy, nextLoc := Parse.For("navy", string(workingData[nextLoc:]))
+				navy, nextLoc := Parse.For("navy", string(fileData[nextLoc:]))
 				if nextLoc == -1 {
 					break
 				}
-				workingData = workingData[nextLoc:]
+				fileData = fileData[nextLoc:]
 				naviesText = append(naviesText, navy)
 				navies = append(navies, NavyConv.Parse(navy))
 			}
@@ -45,12 +47,11 @@ func main() {
 			for _, fleet := range fleets {
 				fleetsData += fleet.String()
 			}
-			updatedData := NavyConv.ClearOldNavies(string(originalData), naviesText)
-
-			updatedData = NavyConv.InsertFleetsIntoUnits(string(originalData), fleetsData)
 
 			// write new files with updated fleets
-			err = ioutil.WriteFile(*outputDirPointer+file.Name(), []byte(updatedData), os.ModeAppend)
+			err = ioutil.WriteFile(*outputDirPointer+file.Name(),
+				[]byte(NavyConv.InsertFleetsIntoUnits(NavyConv.ClearOldNavies(string(originalData), naviesText), fleetsData)),
+				os.ModeAppend)
 			if err != nil {
 				panic(err)
 			}
